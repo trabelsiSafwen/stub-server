@@ -1,0 +1,1972 @@
+openapi: 3.0.3
+info:
+  title: Common
+  description: TODO.
+  version: 1.0.0
+servers:
+- url: https://localhost.lux.eib.org:8443/leap/rest
+  description: LEAP - Localhost
+- url: https://localhost.lux.eib.org:8443/leap-project/rest
+  description: LEAP-PROJECT - Localhost
+- url: https://localhost.lux.eib.org:8443/leap-allocation/rest
+  description: LEAP-ALLOCATION - Localhost
+paths:
+  /v2/tasks/{taskId}:
+    get:
+      tags:
+      - Task
+      summary: Get a task.
+      description: Gets the task corresponding to the given id.
+      operationId: getTaskById
+      parameters:
+      - name: taskId
+        in: path
+        description: The task id.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The corresponding task if found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+      x-swagger-router-controller: Task
+    patch:
+      tags:
+      - task
+      summary: Patch a task.
+      description: Patch the task corresponding to the given id.
+      operationId: patchTaskById
+      parameters:
+      - name: taskId
+        in: path
+        description: The task id.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: The settings for the current logged in user to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+        required: true
+      responses:
+        "200":
+          description: Returns an action result indicating if the validate action
+            was successful or not.  In case of error, the action result contains the
+            list of  of error messages.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+      x-swagger-router-controller: Task
+  /v2/tasks/{taskId}/summary:
+    get:
+      tags:
+      - Task
+      summary: Get a task summary.
+      description: Gets the task summary corresponding to the given id.
+      operationId: getTaskSummaryById
+      parameters:
+      - name: taskId
+        in: path
+        description: The task id.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The corresponding task summary if found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskSummary'
+      x-swagger-router-controller: Task
+  /v2/tasks:
+    get:
+      tags:
+      - Task
+      summary: Gets the tasks summaries.
+      description: Gets the paginated list of tasks summaries corresponding to specified
+        criteria.
+      operationId: getTasks
+      parameters:
+      - name: scope
+        in: query
+        description: The scope of the tasks.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - USER
+          - DELEGATED
+          - DIVISION
+          - DEPARTMENT
+          - DIRECTORATE
+      - name: type
+        in: query
+        description: The type of task to retrieve.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - TASK_TYPE_VALIDATION
+          - TASK_TYPE_COMPLETION
+          - TASK_TYPE_ACKNOWLEDGEMENT
+      - name: q
+        in: query
+        description: The search query (filter) if any. If not, the task will be returned
+          unfiltered.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: The maximum number of items to return per page.
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 1000
+          type: integer
+          format: int32
+        example: 1000
+      - name: size
+        in: query
+        description: The maximum number of items to return per page.
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 1000
+          type: integer
+          format: int32
+        example: 1000
+      responses:
+        "200":
+          description: Paginated list of task summary for specified criteria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTaskSummaries'
+      x-swagger-router-controller: Task
+  /v2/tasks-history:
+    get:
+      tags:
+      - Task
+      summary: Gets the task history.
+      description: Gets the task history for the last n days and a given scope in
+        a paginated manner.
+      operationId: getTasksHistory
+      parameters:
+      - name: scope
+        in: query
+        description: The scope of the tasks. Only the task of current user are available
+          in this version.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - USER
+      - name: last-n-days
+        in: query
+        description: Return the tasks completed in the last n days.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: The maximum number of items to return per page.
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 1000
+          type: integer
+          format: int32
+        example: 1000
+      - name: size
+        in: query
+        description: The maximum number of items to return per page.
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 1000
+          type: integer
+          format: int32
+        example: 1000
+      responses:
+        "200":
+          description: A paginated list of task history corresponding to provided
+            criteria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTaskHistorySummaries'
+      x-swagger-router-controller: Task
+  /v2/tasks/{taskId}/profiles/{screenCode}:
+    get:
+      tags:
+      - Task
+      - Security
+      summary: Gets the current user profiles on the task.
+      description: Gets the current user profiles on the specified task, for a given
+        screen code.
+      operationId: getProfilesByTaskIdAndScreenCode
+      parameters:
+      - name: taskId
+        in: path
+        description: The id of the task to get the profile.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: screenCode
+        in: path
+        description: The screen code for the which the profile must be retrieved.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Returns the list of profiles of the user for the given task
+            and specified screen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfiles'
+      x-swagger-router-controller: Task
+  /v2/business-context/{businessContextId}/tasks:
+    get:
+      tags:
+      - BusinessContext
+      summary: Gets tasks by business context.
+      description: Gets tasks by business context id.
+      operationId: getTasksByBusinessContextId
+      parameters:
+      - name: businessContextId
+        in: path
+        description: The business context id.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The list of tasks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessContextTasks'
+      x-swagger-router-controller: BusinessContext
+  /v1/devices/current:
+    post:
+      tags:
+      - Device
+      summary: Create 'Device'.
+      description: "Apple Push Notification service (APNs) must know the address of\
+        \ a user's device before it can\nsend notifications to that device. This address\
+        \ takes the form of a device token unique to both\nthe device and your app.\
+        \ At launch time, your app communicates with APNs and receives its device\
+        \ \ntoken, which you then forward to your provider server."
+      operationId: postCurrentDevice
+      requestBody:
+        description: The device token for the user’s device.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCurrentDevice'
+        required: true
+      responses:
+        "200":
+          description: 'Status: 201 Created.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+      x-swagger-router-controller: Device
+  /v1/devices/current/settings:
+    get:
+      tags:
+      - DeviceSettings
+      summary: Retrieves the settings for the current logged in user.
+      description: Retrieves the settings for the current logged in user.
+      operationId: getCurrentDeviceSettings
+      responses:
+        "200":
+          description: 'Status: 200 OK.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceSettings'
+      x-swagger-router-controller: DeviceSettings
+    put:
+      tags:
+      - DeviceSettings
+      summary: Updates the settings for the current logged in user.
+      description: Updates the settings for the current logged in user.
+      operationId: putCurrentDeviceSettings
+      requestBody:
+        description: The settings for the current logged in user to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceSettings'
+        required: true
+      responses:
+        "200":
+          description: 'Status: 204 No Content.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+      x-swagger-router-controller: DeviceSettings
+  /v2/business-context/{businessContextId}/documents:
+    get:
+      tags:
+      - BusinessContext
+      summary: Gets documents for a business context.
+      description: Gets documents by business context id.
+      operationId: getDocumentsByBusinessContextId
+      parameters:
+      - name: businessContextId
+        in: path
+        description: The business context id.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The list of documents.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessContextDocuments'
+      x-swagger-router-controller: BusinessContext
+  /v2/business-context/{businessContextId}/workflow:
+    get:
+      tags:
+      - BusinessContext
+      summary: Gets workflows for a business context.
+      description: Gets workflows by business context id.
+      operationId: getWorkflowByBusinessContextId
+      parameters:
+      - name: businessContextId
+        in: path
+        description: The business context id.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The list of workflows.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessContextWorkflow'
+      x-swagger-router-controller: BusinessContext
+components:
+  schemas:
+    Model:
+      title: Model
+      type: object
+      properties:
+        _links:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+      description: TODO.
+    PageMetadata:
+      title: PageMetadata
+      type: object
+      properties:
+        number:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        size:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+      description: TODO.
+    PagedModel:
+      title: PagedModel
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          page:
+            $ref: '#/components/schemas/PageMetadata'
+    Link:
+      title: Link
+      type: object
+      properties:
+        href:
+          type: string
+      description: TODO.
+    Error:
+      title: Error
+      type: object
+      properties:
+        code:
+          type: string
+          description: |-
+            The value for the 'code' name/value pair is a language-independent string.
+            Its value is a service-defined error code that SHOULD be human-readable. This code serves
+            as a more specific indicator of the error than the HTTP Status Code specified in the response.
+        message:
+          type: string
+          description: |-
+            The value for the 'message' name/value pair MUST be a human-readable representation of
+            the error. It is intended as an aid to developers and is not suitable for exposure to end users.
+      description: |-
+        This object MUST contain name/value pairs with the names 'code' and 'message'
+        and extensions MAY contain name/value pairs with the names 'target', 'details'...
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+      description: |-
+        The following is based on the OData JSON Specification. However, it is very generic and does not require
+        specific OData Constructs. APIs SHOULD use this format even if they are not using other OData constructs.
+    AddWizardToUser:
+      title: AddWizardToUser
+      type: object
+      properties:
+        context:
+          type: string
+        wizardDefinitionName:
+          type: string
+      description: TODO.
+    AddUserTilePreference:
+      title: postUserTilePreference
+      type: object
+      properties:
+        tileDefinitionName:
+          type: string
+        preferences:
+          type: object
+          additionalProperties:
+            type: string
+      description: TODO.
+    PostCurrentDevice:
+      title: PostCurrentDevice
+      type: object
+      properties:
+        deviceToken:
+          type: string
+      description: The device token for the user’s device.
+    UserTile:
+      title: UserTile
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          username:
+            type: string
+          creationDate:
+            type: string
+            format: date-time
+          tileDefinition:
+            $ref: '#/components/schemas/TileDefinition'
+          preferences:
+            type: object
+            additionalProperties:
+              type: string
+    PagedUserTiles:
+      title: PagedUserTiles
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserTile'
+    TileDefinition:
+      title: TileDefinition
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+          label:
+            type: string
+          route:
+            type: string
+          priority:
+            type: integer
+            format: int32
+    PagedTileDefinitions:
+      title: PagedTileDefinitions
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/TileDefinition'
+    Wizard:
+      title: Wizard
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          targetUrl:
+            type: string
+          definition:
+            $ref: '#/components/schemas/WizardDefinition'
+    PagedWizards:
+      title: PagedWizards
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Wizard'
+    UserWizard:
+      title: UserWizard
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          username:
+            type: string
+          wizardDefinition:
+            $ref: '#/components/schemas/WizardDefinition'
+    PagedUserWizards:
+      title: PagedUserWizards
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserWizard'
+    WizardDefinition:
+      title: WizardDefinition
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          icon:
+            type: string
+          name:
+            type: string
+          label:
+            type: string
+          context:
+            type: string
+    PagedWizardDefinitions:
+      title: PagedWizardDefinitions
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/WizardDefinition'
+    Counterparty:
+      title: Counterparty
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          name:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+          notForOperationUsage:
+            type: boolean
+          shortName:
+            type: string
+          idWithName:
+            type: string
+          activityNace:
+            type: string
+          creditRiskSector:
+            type: string
+          legalTypeQualification:
+            type: string
+          occoIntegrityCheck:
+            type: string
+          active:
+            type: boolean
+          deleted:
+            type: boolean
+          directorate:
+            type: string
+          equityParticipation:
+            type: string
+          publicSectorOwnershipPercentage:
+            type: number
+          contactInfo:
+            $ref: '#/components/schemas/CounterpartyContactInfo'
+          isDummy:
+            type: boolean
+          number:
+            type: string
+          orgUnit:
+            type: string
+          legalCountry:
+            type: string
+          riskCategory:
+            type: string
+          eibCounterpartyKYC:
+            type: boolean
+    CounterpartyId:
+      title: CounterpartyId
+      type: object
+      properties:
+        number:
+          type: string
+        orgUnit:
+          type: string
+      description: TODO.
+    PagedCounterparties:
+      title: PagedCounterparties
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Counterparty'
+    CounterpartyContactInfo:
+      title: CounterpartyContactInfo
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          phoneNumber:
+            type: string
+          faxNumber:
+            type: string
+          addressPart1:
+            type: string
+          addressPart2:
+            type: string
+          addressPart3:
+            type: string
+          cityPostalAddress:
+            type: string
+          country:
+            type: string
+          fullAddress:
+            type: string
+    PagedCounterpartyContactInfo:
+      title: PagedCounterpartyContactInfo
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CounterpartyContactInfo'
+    CounterpartyGRMInformation:
+      title: CounterpartyGRMInformation
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          isGRMRiskGroup:
+            type: string
+          opsGRMResponsibleDivisionCode:
+            type: string
+          opsGRMResponsibleUser:
+            type: string
+          opsGRMCoResponsibleUser:
+            type: string
+          opsGRMCoResponsibleDivisionCode:
+            type: string
+          tmrGRMResponsibleDivisionCode:
+            type: string
+          tmrGRMResponsibleUser:
+            type: string
+          grmCategory:
+            type: string
+          upperMostManagedCounterpartNumber:
+            type: string
+    PagedCounterpartyGRMInformation:
+      title: PagedCounterpartyGRMInformation
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CounterpartyGRMInformation'
+    CounterpartyResponsible:
+      title: CounterpartyResponsible
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          counterpartyNumber:
+            type: string
+          businessPerson:
+            type: string
+          responsibleType:
+            type: string
+          division:
+            type: string
+          coverageException:
+            type: string
+          comments:
+            type: string
+    PagedCounterpartyResponsibles:
+      title: PagedCounterpartyResponsibles
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CounterpartyResponsible'
+    CounterpartyResponsibilityType:
+      title: CounterpartyResponsibilityType
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+    PagedCounterpartyResponsibilityTypes:
+      title: PagedCounterpartyResponsibilityTypes
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CounterpartyResponsibilityType'
+    Task:
+      title: Task
+      type: object
+      description: Detail of a task.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+          type:
+            $ref: '#/components/schemas/CodificationValueCode'
+          businessContextId:
+            type: string
+          priority:
+            $ref: '#/components/schemas/CodificationValueCode'
+          status:
+            $ref: '#/components/schemas/CodificationValueCode'
+          result:
+            $ref: '#/components/schemas/CodificationValueCode'
+          createdBy:
+            type: string
+          assignedBy:
+            type: string
+          owner:
+            type: string
+          effectiveAssignee:
+            type: string
+          creationTime:
+            type: string
+            format: date-time
+          activationTime:
+            type: string
+            format: date-time
+          assignedTime:
+            type: string
+            format: date-time
+          dueDate:
+            type: string
+            format: date-time
+          comment:
+            type: string
+          completedTime:
+            type: string
+            format: date-time
+          humanTaskDefinitionId:
+            type: string
+          taskDefName:
+            type: string
+          taskDefOptional:
+            type: boolean
+          taskDefType:
+            $ref: '#/components/schemas/CodificationValueCode'
+          taskDefDefaultUserRole:
+            type: string
+          taskDefPotentialAssigneesRole:
+            type: string
+          taskDefPickUpGroup:
+            type: string
+          taskDefDescription:
+            type: string
+          taskDefGroupNumber:
+            type: integer
+          taskDefSequenceInGroup:
+            type: integer
+    TaskSummary:
+      title: TaskSummary
+      type: object
+      description: Summary of a task.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          subject:
+            type: string
+          workflowDescription:
+            type: string
+          taskDefDescription:
+            type: string
+          owner:
+            type: string
+          effectiveAssignee:
+            type: string
+          activationTime:
+            type: string
+            format: date-time
+          businessContextId:
+            type: string
+    PagedTaskSummaries:
+      title: PagedTaskSummaries
+      type: object
+      description: Represents a page of task summaries.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/TaskSummary'
+    TaskHistorySummary:
+      title: TaskHistorySummary
+      type: object
+      description: Summary of a task history.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          status:
+            $ref: '#/components/schemas/CodificationValueCode'
+          result:
+            $ref: '#/components/schemas/CodificationValueCode'
+          subject:
+            type: string
+          workflowDescription:
+            type: string
+          comment:
+            type: string
+          owner:
+            type: string
+          effectiveAssignee:
+            type: string
+          creationTime:
+            type: string
+            format: date-time
+          completedTime:
+            type: string
+            format: date-time
+          businessContextId:
+            type: string
+    PagedTaskHistorySummaries:
+      title: PagedTaskHistorySummaries
+      type: object
+      description: Represents a page of task history summaries.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/TaskHistorySummary'
+    BusinessContextTaskGroup:
+      title: BusinessContextTaskGroup
+      type: object
+      properties:
+        sequence:
+          type: integer
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/BusinessContextTask'
+      description: Entity representing a task group which corresponds to a sequence
+        number and a list of task.
+    BusinessContextTask:
+      title: BusinessContextTask
+      type: object
+      properties:
+        id:
+          type: string
+        owner:
+          type: string
+        effectiveAssignee:
+          type: string
+        optional:
+          type: boolean
+        name:
+          type: string
+        comment:
+          type: string
+        definitionDescription:
+          type: string
+        activationTime:
+          type: string
+          format: date-time
+        assignedTime:
+          type: string
+          format: date-time
+        completedTime:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/CodificationValueCode'
+        result:
+          $ref: '#/components/schemas/CodificationValueCode'
+      description: Entity representing a task.
+    BusinessContextTasks:
+      title: BusinessContextTasks
+      type: object
+      description: Entity containing the task groups.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          taskGroups:
+            type: array
+            items:
+              $ref: '#/components/schemas/BusinessContextTaskGroup'
+    BusinessContextWorkflow:
+      title: BusinessContextWorkflow
+      type: object
+      description: Entity containing the details of a workflow.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          workflowId:
+            type: string
+          workflowHistoryId:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+          submitValidationComment:
+            type: string
+          validationRequestor:
+            type: string
+          abortOriginator:
+            type: string
+          status:
+            $ref: '#/components/schemas/CodificationValueCode'
+          abortSource:
+            $ref: '#/components/schemas/CodificationValueCode'
+          completionDate:
+            type: string
+            format: date-time
+          creationDate:
+            type: string
+            format: date-time
+          lastUpdateDate;:
+            type: string
+            format: date-time
+    BusinessContextDocuments:
+      title: BusinessContextDocuments
+      type: object
+      description: Entity representing a list of document.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          documents:
+            type: array
+            items:
+              $ref: '#/components/schemas/BusinessContextDocument'
+    BusinessContextDocument:
+      title: BusinessContextDocument
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+        type:
+          type: integer
+        lastModifiedDate:
+          type: string
+          format: date-time
+      description: Entity representing a document.
+    UserProfiles:
+      title: UserProfiles
+      type: object
+      properties:
+        profiles:
+          type: array
+          items:
+            type: string
+      description: Represents a list of profiles for a user.
+      example:
+        profiles:
+        - profiles
+        - profiles
+    ActionResult:
+      title: ActionResult
+      type: object
+      properties:
+        success:
+          type: boolean
+          nullable: false
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+      description: Represents the result of an action.
+      example:
+        success: true
+        messages:
+        - severity: ERROR
+          message: message
+        - severity: ERROR
+          message: message
+    Message:
+      title: Message
+      type: object
+      properties:
+        severity:
+          type: string
+          enum:
+          - ERROR
+          - INFO
+          - WARNING
+        message:
+          type: string
+      description: Definition of a message.
+      example:
+        severity: ERROR
+        message: message
+    ApplicationUser:
+      title: ApplicationUser
+      type: object
+      description: "An 'ApplicationUser' represents a logged in user as seen by the\
+        \ application.\nThe user defined by the security module is a technical view\
+        \ of the user; it \nprovides basic security features and properties (id, username...)."
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          username:
+            type: string
+    PagedApplicationUsers:
+      title: PagedApplicationUsers
+      type: object
+      description: A list of 'ApplicationUser's.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/ApplicationUser'
+    BusinessPerson:
+      title: BusinessPerson
+      type: object
+      description: "The 'BusinessPerson' is derived from the security user ('ApplicationUser').\n\
+        It's defined by the application, to attach application-specific properties\
+        \ \nlike last name, first name..."
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          lastName:
+            type: string
+          firstName:
+            type: string
+          email:
+            type: string
+          status:
+            type: string
+          entryDate:
+            type: string
+            format: date-time
+          exitDate:
+            type: string
+            format: date-time
+          orgDivision:
+            type: string
+          roleId:
+            type: integer
+            format: int32
+          unitId:
+            type: string
+          serviceId:
+            type: string
+          divisionId:
+            type: string
+          departmentId:
+            type: string
+          directorateId:
+            type: string
+          fullName:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedBusinessPersons:
+      title: PagedBusinessPersons
+      type: object
+      description: A list of 'BusinessPerson's.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/BusinessPerson'
+    Codification:
+      title: Codification
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          code:
+            type: string
+          name:
+            type: string
+          values:
+            type: array
+            items:
+              $ref: '#/components/schemas/CodificationValue'
+    PagedCodifications:
+      title: PagedCodifications
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Codification'
+    CodificationValue:
+      title: CodificationValue
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          valueCode:
+            type: string
+          valueName:
+            type: string
+          valueShortName:
+            type: string
+          sortOrder:
+            type: integer
+            format: int32
+          startOfValidity:
+            type: string
+            format: date-time
+          endOfValidity:
+            type: string
+            format: date-time
+          parentCode:
+            type: string
+    CodificationValueCode:
+      title: CodificationValueCode
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          code:
+            type: string
+    PagedCodificationValues:
+      title: PagedCodificationValues
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CodificationValue'
+    Department:
+      title: Department
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+          shortName:
+            type: string
+          directorateId:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedDepartments:
+      title: PagedDepartments
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Department'
+    Directorate:
+      title: Directorate
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+          shortName:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedDirectorates:
+      title: PagedDirectorates
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Directorate'
+    Division:
+      title: Division
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+          shortName:
+            type: string
+          departmentId:
+            type: string
+          directorateId:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedDivisions:
+      title: PagedDivisions
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Division'
+    Country:
+      title: Country
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          name:
+            type: string
+          countryId:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedCountries:
+      title: PagedCountries
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Country'
+    CountryGroup:
+      title: CountryGroup
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          name:
+            type: string
+          countryGroupId:
+            type: string
+          allowOnlyEuroOperation:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedCountryGroups:
+      title: PagedCountryGroups
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CountryGroup'
+    CountryRegion:
+      title: CountryRegion
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          name:
+            type: string
+          regionId:
+            type: string
+          countryId:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedCountryRegions:
+      title: PagedCountryRegions
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CountryRegion'
+    Sector:
+      title: Sector
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+          sectorRiskId:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedSectors:
+      title: PagedSectors
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Sector'
+    Role:
+      title: Role
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: integer
+            format: int32
+          name:
+            type: string
+    PagedRoles:
+      title: PagedRoles
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Role'
+    CountryGroupCountry:
+      title: CountryGroupCountry
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          countryId:
+            type: string
+          countryGroupId:
+            type: string
+          joinDate:
+            type: string
+            format: date-time
+          withdrawalDate:
+            type: string
+            format: date-time
+    PagedCountryGroupCountries:
+      title: PagedCountryGroupCountries
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/CountryGroupCountry'
+    EibRiskFund:
+      title: EibRiskFund
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          eibRiskFundId:
+            type: string
+          name:
+            type: string
+    PagedEibRiskFunds:
+      title: PagedEibRiskFund
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/EibRiskFund'
+    Mandate:
+      title: Mandate
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          code:
+            type: string
+          name:
+            type: string
+          shortName:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+          mandateGuaranteeAgreementId:
+            type: string
+          eibRiskFundId:
+            type: integer
+            format: int32
+          mandateId:
+            type: integer
+            format: int32
+    PagedMandates:
+      title: PagedMandates
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Mandate'
+    MandateGuaranteeAgreement:
+      title: MandateGuaranteeAgreement
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          name:
+            type: string
+          mandateGuaranteeAgreementId:
+            type: string
+    PagedMandateGuaranteeAgreements:
+      title: PagedMandateGuaranteeAgreements
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/MandateGuaranteeAgreement'
+    LegalQualification:
+      title: LegalQualification
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+    PagedLegalQualifications:
+      title: PagedLegalQualifications
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/LegalQualification'
+    IntegrityCheck:
+      title: IntegrityCheck
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+    PagedIntegrityChecks:
+      title: PagedIntegrityChecks
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/IntegrityCheck'
+    Activity:
+      title: Activity
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          id:
+            type: string
+          name:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+          sector:
+            type: string
+          sectorRisk:
+            type: string
+          activityGroup:
+            type: string
+          sensitivityPg:
+            type: string
+          sensitivitySme:
+            type: string
+          sensitivityPgEu:
+            type: string
+    PagedActivities:
+      title: PagedActivities
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/Activity'
+    SourceOfFunds:
+      title: SourceOfFunds
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          name:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+          fundOriginSequence:
+            type: integer
+            format: int32
+          eibFundingIndicator:
+            type: string
+          sourceOfFundsId:
+            type: string
+    PagedSourceOfFunds:
+      title: PagedSourceOfFunds
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/SourceOfFunds'
+    SourceOfFundsMandateCountryGroup:
+      title: SourceOfFundsMandateCountryGroup
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          countryGroupId:
+            type: string
+          sourceOfFundsId:
+            type: string
+          mandateId:
+            type: integer
+            format: int32
+          euGuarantee:
+            type: string
+          riskSharing:
+            type: string
+          subsidyIndicator:
+            type: string
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedSourceOfFundsMandateCountryGroups:
+      title: PagedSourceOfFundsMandateCountryGroups
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/SourceOfFundsMandateCountryGroup'
+    RiskSharingMandate:
+      title: RiskSharingMandate
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          code:
+            type: string
+          name:
+            type: string
+          shortName:
+            type: string
+          active:
+            type: boolean
+          startOfValidity:
+            type: string
+            format: date-time
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedRiskSharingMandates:
+      title: PagedRiskSharingMandates
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/RiskSharingMandate'
+    RiskSharingSegment:
+      title: RiskSharingSegment
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          code:
+            type: string
+          name:
+            type: string
+          shortName:
+            type: string
+          active:
+            type: boolean
+          startOfValidity:
+            type: string
+            format: date-time
+          endOfValidity:
+            type: string
+            format: date-time
+    PagedRiskSharingSegments:
+      title: PagedRiskSharingSegments
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/RiskSharingSegment'
+    RiskSharingStructure:
+      title: RiskSharingStructure
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          code:
+            type: string
+          name:
+            type: string
+          shortName:
+            type: string
+          active:
+            type: boolean
+          startOfValidity:
+            type: string
+            format: date-time
+          endOfValidity:
+            type: string
+            format: date-time
+          efsiInternalMultiplierExAnte:
+            type: integer
+            format: int32
+    PagedRiskSharingStructures:
+      title: PagedRiskSharingStructures
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/RiskSharingStructure'
+    RiskSharingMandateToSegmentLink:
+      title: RiskSharingMandateToSegmentLink
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          riskSharingMandate:
+            $ref: '#/components/schemas/RiskSharingMandate'
+          riskSharingSegment:
+            $ref: '#/components/schemas/RiskSharingSegment'
+    PagedRiskSharingMandateToSegmentLinks:
+      title: PagedRiskSharingMandateToSegmentLinks
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/RiskSharingMandateToSegmentLink'
+    RiskSharingStructureToSegmentLink:
+      title: RiskSharingStructureToSegmentLink
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          riskSharingStructure:
+            $ref: '#/components/schemas/RiskSharingStructure'
+          riskSharingSegment:
+            $ref: '#/components/schemas/RiskSharingSegment'
+    PagedRiskSharingStructureToSegmentLinks:
+      title: PagedRiskSharingStructureToSegmentLinks
+      type: object
+      description: TODO.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/RiskSharingStructureToSegmentLink'
+    Characteristic:
+      title: Characteristic
+      type: object
+      description: Characteristic
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          estimatedAmount:
+            type: number
+          percentageEligible:
+            type: number
+          definition:
+            $ref: '#/components/schemas/CharacteristicDefinition'
+    CharacteristicDefinition:
+      title: CharacteristicDefinition
+      type: object
+      description: Characteristic definition
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          characteristicCode:
+            $ref: '#/components/schemas/CodificationValueCode'
+    DeviceSettings:
+      title: DeviceSettings
+      type: object
+      description: "Define which aspects of your app's behavior and appearance you\
+        \ want \nto be able to change using your provider server, and translate these\n\
+        into the parameters that you will use in your app."
+      allOf:
+      - $ref: '#/components/schemas/Model'
+      - properties:
+          username:
+            type: string
+          notificationsEnabled:
+            type: boolean
+    PagedDeviceSettings:
+      title: PagedDeviceSettings
+      type: object
+      description: A list of 'DeviceSettings'.
+      allOf:
+      - $ref: '#/components/schemas/PagedModel'
+      - properties:
+          _embedded:
+            type: array
+            items:
+              $ref: '#/components/schemas/DeviceSettings'
+  parameters:
+    limitParam:
+      name: page
+      in: query
+      description: The maximum number of items to return per page.
+      required: false
+      style: form
+      explode: true
+      schema:
+        maximum: 1000
+        type: integer
+        format: int32
+      example: 1000
+    sizeParam:
+      name: size
+      in: query
+      description: The maximum number of items to return per page.
+      required: false
+      style: form
+      explode: true
+      schema:
+        maximum: 1000
+        type: integer
+        format: int32
+      example: 1000
+  securitySchemes:
+    BasicAuth:
+      type: http
+      description: 'Basic Authentication: https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme'
+      scheme: basic
+    OAuth2Security:
+      type: oauth2
+      description: TODO.
+      flows:
+        password:
+          tokenUrl: https://sts-dev.eib.org/adfs/oauth2/token
+          scopes: {}
